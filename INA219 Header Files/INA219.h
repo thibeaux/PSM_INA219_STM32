@@ -2,11 +2,15 @@
  * INA219.h
  *
  *  Created on: Dec 30, 2020
+ *  Updated on: Jan 29, 2022
  *      Author: Piotr Smolen <komuch@gmail.com>
+ *     	Updated by: Brandon Thibeaux <github: thibeaux>
  */
 
 #ifndef INC_INA219_H_
 #define INC_INA219_H_
+
+#include <stdbool.h>
 
 #define INA219_ADDRESS 							(0x40)
 
@@ -70,15 +74,25 @@ typedef struct
 	uint8_t				Address;
 } INA219_t;
 
+enum BatteryState {Battery_START,Battery_OK, Battery_LOW}; // To help health check function sufficiently diagnose problems
+bool isFirst;
+
 uint16_t ina219_calibrationValue;
 int16_t ina219_currentDivider_mA;
 int16_t ina219_powerMultiplier_mW;
 
+int INA219_GetDeltaTime_ms();
 uint8_t INA219_Init(INA219_t *ina219, I2C_HandleTypeDef *i2c, uint8_t Address);
 uint16_t INA219_ReadBusVoltage(INA219_t *ina219);
 int16_t INA219_ReadCurrent(INA219_t *ina219);
 int16_t INA219_ReadCurrent_raw(INA219_t *ina219);
 uint16_t INA219_ReadShuntVolage(INA219_t *ina219);
+uint16_t INA219_ReadPower(INA219_t *ina219);
+float INA219_GetBatteryLife(INA219_t *ina219,float batteryMax, float batteryMin);
+float INA219_GetAVGMiliWatt(INA219_t *ina219);
+float INA219_GetMiliWattsDeltaTime(INA219_t *ina219);
+float INA219_GetTotalPowerUsed(INA219_t *ina219);
+enum BatteryState INA219_HealthCheck(INA219_t *ina219,float batteryPercentageThreshold,float batteryPercentage);
 
 void INA219_Reset(INA219_t *ina219);
 void INA219_setCalibration(INA219_t *ina219, uint16_t CalibrationData);
@@ -90,7 +104,7 @@ void INA219_setCalibration_16V_400mA(INA219_t *ina219);
 void INA219_setPowerMode(INA219_t *ina219, uint8_t Mode);
 
 uint16_t Read16(INA219_t *ina219, uint8_t Register);
-void Write16(INA219_t *ina219, uint8_t Register, uint16_t Value);
+HAL_StatusTypeDef Write16(INA219_t *ina219, uint8_t Register, uint16_t Value);
 
 
 
